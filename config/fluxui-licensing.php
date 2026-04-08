@@ -39,4 +39,21 @@ return [
 
     'per_page' => 15,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Authorization gate
+    |--------------------------------------------------------------------------
+    |
+    | When set to a non-null string, every mutating action in the LicenseManager
+    | component (create, activate, suspend, show/regenerate key) will check this
+    | Gate ability before proceeding. Define the gate in your AppServiceProvider:
+    |
+    |   Gate::define('manage-licenses', fn (User $user) => $user->isAdmin());
+    |
+    | When null (default), only the route middleware (auth, verified) is applied.
+    |
+    */
+
+    'gate' => null,
+
 ];

@@ -5,12 +5,13 @@ namespace AgenticMorf\FluxUILicensing\Livewire;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use LucaLongo\Licensing\Enums\LicenseStatus;
+use LucaLongo\Licensing\Models\License;
 
 class LicenseDashboard extends Component
 {
     public function render(): View
     {
-        $licenseModel = config('licensing.models.license');
+        $licenseModel = config('licensing.models.license', License::class);
 
         $stats = [
             'total' => $licenseModel::query()->count(),
@@ -26,12 +27,10 @@ class LicenseDashboard extends Component
         ];
 
         $recentLicenses = $licenseModel::query()
-            ->with(['scope', 'template'])
+            ->with(['scope'])
             ->where('status', LicenseStatus::Active)
-            ->where(function ($q) {
-                $q->whereNull('activated_at')
-                    ->orWhere('activated_at', '>=', now()->subDays(7));
-            })
+            ->whereNotNull('activated_at')
+            ->where('activated_at', '>=', now()->subDays(7))
             ->orderByDesc('activated_at')
             ->limit(5)
             ->get();

@@ -37,7 +37,8 @@ Add links to your settings sidebar:
 
 See `config/fluxui-licensing.php`:
 
-- `route` — URL under `/settings` (default: `settings/licenses`)
+- `route` — URL path for the licenses page (default: `settings/licenses`)
 - `route_name` — Named route (default: `licensing.index`)
 - `middleware` — Middleware applied to routes (default: `['web', 'auth', 'verified']`)
 - `per_page` — Licenses per page (default: `15`)
+- `gate` — Optional Gate ability checked on all mutations (default: `null`)

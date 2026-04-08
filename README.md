@@ -65,6 +65,28 @@ See `config/fluxui-licensing.php`:
 | `route_name` | `licensing.index` | Named route for the licenses page |
 | `middleware` | `['web', 'auth', 'verified']` | Middleware applied to all licensing routes |
 | `per_page` | `15` | Licenses shown per page in the list view |
+| `gate` | `null` | Optional Gate ability checked on all mutations (see below) |
+
+### Authorization gate
+
+By default only the route middleware (`auth`, `verified`) is enforced. For stricter
+control, set `gate` in the config and define the ability in your `AppServiceProvider`:
+
+```php
+// config/fluxui-licensing.php
+'gate' => 'manage-licenses',
+
+// app/Providers/AppServiceProvider.php
+use Illuminate\Support\Facades\Gate;
+
+Gate::define('manage-licenses', fn (User $user) => $user->is_admin);
+```
+
+### Dependency note
+
+`masterix21/laravel-licensing` has not yet published a stable release; this package
+requires `@dev` and sets `minimum-stability: dev` + `prefer-stable: true`. Once a
+stable release is tagged, update your own `composer.json` constraint accordingly.
 
 ## Components
 

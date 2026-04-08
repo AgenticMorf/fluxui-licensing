@@ -11,7 +11,7 @@
         <flux:select wire:model.live="statusFilter" class="max-w-xs" :placeholder="__('All statuses')">
             <flux:select.option value="">{{ __('All statuses') }}</flux:select.option>
             @foreach ($statuses as $status)
-                <flux:select.option value="{{ $status->value }}">{{ $status->label() }}</flux:select.option>
+                <flux:select.option value="{{ $status->value }}">{{ ucfirst($status->value) }}</flux:select.option>
             @endforeach
         </flux:select>
 
@@ -75,7 +75,7 @@
                                         default => 'zinc',
                                     };
                                 @endphp
-                                <flux:badge size="sm" :color="$statusColor">{{ $license->status->label() }}</flux:badge>
+                                <flux:badge size="sm" :color="$statusColor">{{ ucfirst($license->status->value) }}</flux:badge>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="font-mono text-xs {{ $license->usages_count >= $license->max_usages ? 'text-red-600 dark:text-red-400' : 'text-zinc-700 dark:text-zinc-300' }}">

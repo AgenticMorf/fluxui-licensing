@@ -5,9 +5,13 @@ namespace AgenticMorf\FluxUILicensing\Livewire;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 use LucaLongo\Licensing\Enums\LicenseStatus;
+use LucaLongo\Licensing\Models\License;
+use LucaLongo\Licensing\Models\LicenseScope;
 
 class LicenseManager extends Component
 {
@@ -68,12 +72,19 @@ class LicenseManager extends Component
 
     public function createLicense(): void
     {
+        $this->authorizeAction();
+
+        $scopeModel = config('licensing.models.license_scope', LicenseScope::class);
+        $scopeTable = (new $scopeModel())->getTable();
+
         $this->validate([
-            'createScopeId' => ['required'],
+            'createScopeId' => ['required', Rule::exists($scopeTable, 'id')],
             'createMaxUsages' => ['required', 'integer', 'min:1'],
+            'createTemplateId' => ['nullable'],
+            'createExpiresAt' => ['nullable', 'date'],
         ]);
 
-        $licenseModel = config('licensing.models.license');
+        $licenseModel = config('licensing.models.license', License::class);
 
         $data = [
             'license_scope_id' => $this->createScopeId,
@@ -93,8 +104,8 @@ class LicenseManager extends Component
 
         $this->showCreateModal = false;
 
-        if ($license->temporaryLicenseKey ?? null) {
-            $this->revealedKey = $license->temporaryLicenseKey;
+        if ($license->license_key !== null) {
+            $this->revealedKey = $license->license_key;
             $this->revealedLicenseUid = $license->uid;
             $this->showKeyModal = true;
         }
@@ -109,14 +120,22 @@ class LicenseManager extends Component
 
     public function showKey(string $licenseId): void
     {
-        $licenseModel = config('licensing.models.license');
+        $this->authorizeAction();
+
+        $licenseModel = config('licensing.models.license', License::class);
         $license = $licenseModel::findOrFail($licenseId);
 
         if (! $license->canRetrieveKey()) {
             return;
         }
 
-        $this->revealedKey = $license->retrieveKey();
+        $key = $license->retrieveKey();
+
+        if ($key === null) {
+            return;
+        }
+
+        $this->revealedKey = $key;
         $this->revealedLicenseUid = $license->uid;
         $this->showKeyModal = true;
     }
@@ -155,10 +174,12 @@ class LicenseManager extends Component
 
     public function executeConfirmedAction(): void
     {
+        $this->authorizeAction();
+
         $id = $this->confirmingLicenseId;
         abort_unless($id !== null, 404);
 
-        $licenseModel = config('licensing.models.license');
+        $licenseModel = config('licensing.models.license', License::class);
         $license = $licenseModel::findOrFail($id);
 
         match ($this->confirmAction) {
@@ -183,9 +204,23 @@ class LicenseManager extends Component
         $this->showKeyModal = true;
     }
 
+    /**
+     * Check an optional gate guard defined in config('fluxui-licensing.gate').
+     * If no gate is configured, the action proceeds without further checks (the
+     * route middleware already enforces authentication).
+     */
+    protected function authorizeAction(): void
+    {
+        $gate = config('fluxui-licensing.gate');
+
+        if ($gate !== null) {
+            abort_unless(Gate::allows($gate), 403);
+        }
+    }
+
     protected function licenses(): LengthAwarePaginator
     {
-        $licenseModel = config('licensing.models.license');
+        $licenseModel = config('licensing.models.license', License::class);
 
         $query = $licenseModel::query()->with(['scope', 'template'])->withCount('usages');
 
@@ -209,7 +244,7 @@ class LicenseManager extends Component
 
     protected function scopes(): Collection
     {
-        $scopeModel = config('licensing.models.license_scope', \LucaLongo\Licensing\Models\LicenseScope::class);
+        $scopeModel = config('licensing.models.license_scope', LicenseScope::class);
 
         return $scopeModel::orderBy('name')->get();
     }
@@ -220,7 +255,7 @@ class LicenseManager extends Component
             return collect();
         }
 
-        $scopeModel = config('licensing.models.license_scope', \LucaLongo\Licensing\Models\LicenseScope::class);
+        $scopeModel = config('licensing.models.license_scope', LicenseScope::class);
         $scope = $scopeModel::find($this->createScopeId);
 
         return $scope ? $scope->templates()->orderBy('name')->get() : collect();
