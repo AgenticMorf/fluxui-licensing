@@ -20,7 +20,7 @@ php artisan vendor:publish --tag=fluxui-licensing-views
 
 - Laravel 11 or 12
 - Livewire 3 or 4
-- Livewire Flux 2 (Pro or free)
+- Livewire Flux 2 Pro (`livewire/flux`)
 - [masterix21/laravel-licensing](https://github.com/masterix21/laravel-licensing) installed and migrated
 
 ## Settings navigation

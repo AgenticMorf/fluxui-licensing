@@ -99,7 +99,7 @@
     <flux:modal wire:model.self="showDeleteModal" class="max-w-md">
         <div class="space-y-4">
             <flux:heading size="lg">{{ __('Delete scope?') }}</flux:heading>
-            <flux:text>{{ __('This scope and all its associated licenses will be permanently deleted.') }}</flux:text>
+            <flux:text>{{ __('This scope will be permanently deleted. Licenses belonging to this scope will not be automatically removed.') }}</flux:text>
             <div class="flex justify-end gap-2">
                 <flux:button type="button" variant="ghost" wire:click="cancelDelete">{{ __('Cancel') }}</flux:button>
                 <flux:button type="button" variant="danger" wire:click="deleteScope">{{ __('Delete') }}</flux:button>

@@ -37,7 +37,7 @@ class FluxUILicensingServiceProvider extends ServiceProvider
             )->name(config('fluxui-licensing.route_name', 'licensing.index'));
 
             Route::view(
-                config('fluxui-licensing.route', 'settings/licenses').'/scopes',
+                rtrim(config('fluxui-licensing.route', 'settings/licenses'), '/').'/scopes',
                 'fluxui-licensing::settings.scopes',
             )->name('licensing.scopes');
         });
